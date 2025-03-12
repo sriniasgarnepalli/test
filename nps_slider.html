@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Styled Slider with Submit</title>
+  <style>
+    body {
+  font-family: Arial, sans-serif;
+  background-color: #fff;
+  margin-left: 10px; /* Moves content to the left */
+  margin-top: 40px;  /* Moves content slightly down */
+  text-align: left;  /* Aligns all text and content to the left */
+}
+
+.submit-container {
+  margin-top: 10px;
+  text-align: left; /* Keeps the button aligned to the left */
+}
+
+
+    .slider-container {
+      width: 230px;
+    }
+
+    .slider-wrapper {
+      position: relative;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .slider {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 8px;
+      background: #d3d3d3;
+      border-radius: 5px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      background: #007bff;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .tooltip {
+      position: absolute;
+      top: -35px;
+      left: 0;
+      transform: translateX(-0%);
+      background: #007bff;
+      color: #fff;
+      font-size: 14px;
+      font-weight: bold;
+      padding: 5px 10px;
+      border-radius: 5px;
+      white-space: nowrap;
+      text-align: left;
+    }
+
+    .labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #555;
+      margin-top: -10px;
+    }
+
+.submit-container {
+  margin-top: 10px;
+  text-align: left; /* Center the button */
+}
+
+button {
+  background-color: #007bff;
+  color: #fff;
+  padding: 8px 8px;
+  border: none;
+  border-radius: 3px;
+  font-size: 13px;
+  cursor: pointer;
+  position: relative; /* Enable relative positioning */
+  left: 90px; /* Move the button 10px to the right */
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+
+    #result {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="slider-container">
+    <div class="slider-wrapper">
+      <div class="tooltip" id="tooltip">5</div>
+      <input type="range" id="rating-slider" class="slider" min="0" max="10" step="1" value="5">
+    </div>
+    <div class="labels">
+      <span>Very Bad</span>
+      <span>Extremely Likely</span>
+    </div>
+  </div>
+
+  <div class="submit-container">
+    <button id="submit-button">Submit</button>
+  </div>
+
+  <div id="result"></div>
+
+  <script>
+    const slider = document.getElementById("rating-slider");
+    const tooltip = document.getElementById("tooltip");
+    const submitButton = document.getElementById("submit-button");
+    const result = document.getElementById("result");
+
+    // Update tooltip dynamically
+    function updateTooltip() {
+      const sliderWidth = slider.offsetWidth;
+      const sliderMin = slider.min;
+      const sliderMax = slider.max;
+      const value = slider.value;
+
+      const percentage = ((value - sliderMin) / (sliderMax - sliderMin)) * 100;
+      tooltip.style.left = `calc(${percentage}% - ${tooltip.offsetWidth / 2}px)`;
+      tooltip.textContent = value;
+    }
+
+    slider.addEventListener("input", updateTooltip);
+
+    // Show selected value on submit and send event to parent window
+    function handleButtonClick() {
+      const ratingValue = slider.value;
+
+      // Disable the slider after submission
+      slider.disabled = true;
+      submitButton.disabled = true;
+
+      // Update result on the page
+      // result.textContent = `You selected: ${ratingValue}`;
+
+      // Post the message to the parent window
+      window.parent.postMessage({
+        event_code: 'ym-client-event',
+        data: JSON.stringify({
+          event: {
+            code: "nps",
+            data: {
+              rating: ratingValue
+            }
+          }
+        })
+      }, '*');
+    }
+
+    submitButton.addEventListener("click", handleButtonClick);
+
+    // Handle incoming messages from the parent window
+    window.addEventListener('message', (event) => {
+      console.log("Received message from parent window:", event.data);
+    });
+
+    // Initial tooltip position
+    updateTooltip();
+  </script>
+</body>
+</html>
